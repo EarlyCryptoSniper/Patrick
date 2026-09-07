@@ -1,6 +1,6 @@
 import { supabase } from "./lib/supabaseClient";
 import { CommitmentList } from "./features/commitments/CommitmentList";
-import { NewCommitmentForm } from "./features/commitments/NewCommitmentForm";
+import { CommitmentWizard } from "./features/commitments/CommitmentWizard";
 import { useCommitments } from "./features/commitments/useCommitments";
 
 export function Dashboard() {
@@ -23,7 +23,7 @@ export function Dashboard() {
       </header>
 
       <div className="mb-8">
-        <NewCommitmentForm onCreated={refresh} />
+        <CommitmentWizard onCreated={refresh} />
       </div>
 
       {error && (

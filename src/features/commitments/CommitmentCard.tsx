@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { Commitment } from "../../lib/types";
 import { deleteDraft, lockCommitment } from "./api";
-import { canDelete, canLock, isOverdue } from "./stateMachine";
+import { ProofUpload } from "./ProofUpload";
+import { canDelete, canFinalizeProof, canLock, isOverdue } from "./stateMachine";
 import { StatusPill } from "./StatusPill";
 
 const formatter = new Intl.DateTimeFormat("nl-NL", {
@@ -51,7 +52,12 @@ export function CommitmentCard({
     <li className="flex flex-col gap-3 rounded-lg border border-ink-700 bg-ink-900 p-4">
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-base font-medium text-paper">{commitment.title}</h3>
-        <StatusPill status={commitment.status} />
+        <div className="flex items-center gap-2">
+          {commitment.stake_cents > 0 && (
+            <span className="font-mono text-xs text-status-locked">€{commitment.stake_cents / 100}</span>
+          )}
+          <StatusPill status={commitment.status} />
+        </div>
       </div>
 
       <p className="font-mono text-xs text-ink-600">
@@ -62,8 +68,8 @@ export function CommitmentCard({
         )}
       </p>
 
-      {commitment.status === "locked" && (
-        <p className="text-xs text-ink-600">Foto-bewijs uploaden komt in Phase 2.</p>
+      {canFinalizeProof(commitment.status, deadline, now) && (
+        <ProofUpload commitmentId={commitment.id} onFinalized={onChanged} />
       )}
 
       {(canLock(commitment.status, deadline, now) || canDelete(commitment.status)) && (

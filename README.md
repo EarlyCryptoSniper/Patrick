@@ -1,10 +1,14 @@
-# LockIn — Phase 1
+# LockIn
 
 Habit commitment tool. Geen kansspel. Geen pot, geen odds, geen winst van anderen.
-V1 schrijft geen geld af.
+Er wordt nog altijd geen geld afgeschreven — Phase 2's inzet-stap is UI-only,
+zie "Phase 2" hieronder.
 
 Herbouwd vanaf nul; ontwerp is gerouteerd via de skills in `.claude/skills`
 (zie onderaan "Ontwerpaantekeningen").
+
+**Status: Phase 1 compleet, Phase 2 gedeeltelijk** (wizard + foto-upload
+gebouwd, betaling nog niet aangesloten).
 
 ## Stack
 
@@ -32,15 +36,16 @@ Gebruik **alleen** de anon/publishable key. Nooit de service-role key in deze ap
 3. Authentication → URL configuration:
    - Site URL: `http://localhost:5173`
    - Redirect URLs: `http://localhost:5173/**`
-4. SQL Editor: plak en run
+4. SQL Editor: plak en run, in deze volgorde
    `supabase/migrations/20260907000000_phase1_foundation.sql`
+   `supabase/migrations/20260908000000_phase2_stake.sql`
 5. Database → Extensions: zet `pg_cron` aan als je automatische expiry wilt
    (roept dan `expire_due_commitments()` als privileged role aan, buiten
    een user-sessie om, dus globaal in plaats van per gebruiker).
    Zonder cron expire't de app nog steeds als iemand het dashboard opent —
    `useCommitments` roept de RPC self-heal aan op elke load.
 6. Storage: bucket `commitment-proofs` wordt door de migratie aangemaakt
-   (privé). Upload-UI volgt in Phase 2.
+   (privé). Upload-UI staat er nu (Phase 2).
 
 ## Statusmachine
 
@@ -58,11 +63,17 @@ controleren elke transitie zelf opnieuw.
 
 | Functie | Doel |
 |---|---|
-| `create_commitment_draft` | Rij aanmaken, status draft |
+| `create_commitment_draft(title, deadline, stake_cents=0)` | Rij aanmaken, status draft. `stake_cents` moet 0, 500 of 1000 zijn — afgedwongen in de RPC én als kolom-`check`. |
 | `lock_commitment` | Tekenen, `signed_at = now()` |
-| `finalize_proof` | Foto-pad vastleggen, completed (backend klaar, geen UI in Phase 1) |
+| `finalize_proof` | Foto-pad vastleggen, completed |
 | `delete_draft` | Alleen eigen draft weg |
 | `expire_due_commitments` | locked + deadline voorbij → failed; self-scoped bij een user-sessie, globaal zonder |
+
+`create_commitment_draft` kreeg met de Phase 2-migratie een derde,
+gedefaulte parameter. De migratie dropt en herschept 'm expliciet zodat er
+nooit twee overloads naast elkaar bestaan (PostgREST zou daar last van
+kunnen hebben) — zie
+`supabase/migrations/20260908000000_phase2_stake.sql`.
 
 ## Checks
 
@@ -78,22 +89,40 @@ zodra je stap 1–6 hierboven hebt doorlopen. Wat lokaal wél gecontroleerd is:
 - `npm run check:boundaries` — een klein scriptje (`scripts/check-write-boundary.mjs`)
   dat faalt zodra ergens buiten `api.ts` een `.insert(/.update(/.delete(/.upsert(`
   op de tabel opduikt, zodat de "alleen via RPC"-regel niet per ongeluk lekt
-- `npm run test` — vitest op de pure guard-functies in `stateMachine.ts`
+- `npm run test` — vitest op de pure guard-functies in `stateMachine.ts` en
+  op `proofPath.ts` (bestandspad-opbouw voor de storage-upload)
 - `npm run build` — productie-build via Vite
 
 ## Phase 1 bewust niet gebouwd
 
-- Commitment-wizard
-- Foto-upload UI (RPC-contract en storage-bucket staan er al wel)
 - Stripe / Mollie
 - Video, GPS, timelapse
 - Landing-wow pagina
 
-## Phase 2
+## Phase 2 — status
 
-Wizard: €5/€10 → taak → deadline → samenvatting → tekenen → Vastgezet.
-Daarna foto-upload naar `{user_id}/{commitment_id}/{uuid}.jpg`, met
-`finalize_proof` als afsluitende RPC.
+Gebouwd (niet-financieel deel):
+
+- **Wizard** (`CommitmentWizard.tsx`, verving `NewCommitmentForm.tsx`):
+  taak → deadline → inzet → samenvatting → tekenen. Niets wordt
+  weggeschreven vóór de laatste stap — de tussenstappen leven alleen in
+  lokale component-state, dus "Annuleren" is triviaal veilig en er is geen
+  aparte `update_draft`-RPC nodig. De laatste stap roept
+  `create_commitment_draft` en meteen `lock_commitment` aan: de wizard
+  eindigt altijd in Vastgezet, zoals de spec beschrijft.
+- **Inzet (€5/€10)**: gekozen bedrag wordt getoond en opgeslagen
+  (`stake_cents`), maar **niet afgeschreven** — er is geen
+  betalingsprovider-aanroep. De samenvattingsstap zegt dat expliciet.
+- **Foto-upload** (`ProofUpload.tsx`): verschijnt op een vastgezette
+  commitment zolang de deadline niet voorbij is (`canFinalizeProof`).
+  Upload gaat naar `commitment-proofs/{user_id}/{commitment_id}/{uuid}.ext`
+  (bestandsextensie uit de meegegeven file, `proofPath.ts`, puur
+  functie/los getest), gevolgd door `finalize_proof`.
+
+Nog niet gebouwd (bewust, wacht op een providerkeuze mét de gebruiker
+erbij): echte betaling via Stripe of Mollie — dat vraagt een account en
+API-key, en verandert de "V1 schrijft geen geld af"-belofte fundamenteel
+zodra het aangesloten wordt.
 
 ## Backlog
 
@@ -150,3 +179,33 @@ readiness** (scope was al eenduidig, geen graf nodig), **morphogenetic-
 architecture** in volle vorm (één app, geen multi-service topologie om te
 plaatsen), **architecture-as-code** enforcement-tooling (te zwaar voor dit
 formaat), **system-optimization** (iteratie-2-gate, dit is iteratie 1).
+
+### Phase 2 (wizard + foto-upload)
+
+Lichtere **ADAPTIVE**-route dan Phase 1 — dit breidt een al ontworpen
+architectuur uit, geen greenfield-beslissingen meer nodig:
+
+- **functionality-complexity-tradeoff** — geen `update_draft`-RPC
+  toegevoegd: de wizard houdt tussenstappen client-side vast en schrijft
+  pas op de laatste stap, dus er is geen mutable-draft-endpoint nodig.
+  Ook: geen vrije-invoer-bedrag, alleen de twee spec-waarden (€5/€10) plus
+  "geen inzet" — minder oppervlak, minder validatie.
+- **evolutionary-database-design** — `stake_cents` als expand-only kolom
+  (`not null default 0`, dus bestaande rijen blijven geldig) in een
+  *nieuwe* migratiebestand, niet een edit van de Phase 1-migratie.
+  `create_commitment_draft` wordt met `drop function` + opnieuw aangemaakt
+  vervangen (niet gewoon een `create or replace` met extra parameter) om
+  een stille PostgREST-overload te voorkomen. Toegestane bedragen (0, 500,
+  1000) zitten dubbel: als RPC-check én als kolom-`check`-constraint —
+  zelfde dubbele-handhaving-patroon als de Phase 1 write-boundary.
+- **architecture-guidelines** — `ProofUpload`/`CommitmentWizard` blijven in
+  `features/commitments/`, geen nieuwe featuremap voor twee bestanden.
+  Storage-writes gaan net als RPC's alleen via `api.ts` — UI-componenten
+  raken de Supabase-client zelf nooit aan, ook niet voor Storage.
+- **defect-shift-left** — bestandspad-opbouw (`buildProofPath`) is een pure
+  functie in een los bestand, getest zonder netwerk/DB (4 nieuwe tests).
+
+Overgeslagen: betaalprovider-integratie zelf (aparte beslissing, wacht op
+Stripe/Mollie-keuze en account van de gebruiker) en dus ook de
+enforcement/shift-left-gates die daarbij zouden horen (geldstromen,
+webhook-verificatie) — die horen bij dát werk, niet bij deze stap.
