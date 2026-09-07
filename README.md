@@ -29,16 +29,31 @@ npm run dev
 
 Gebruik **alleen** de anon/publishable key. Nooit de service-role key in deze app.
 
-## Supabase — handmatige stappen
+## Supabase — instellen
 
 1. Nieuw project op https://supabase.com
 2. Authentication → Providers: Email aan
 3. Authentication → URL configuration:
    - Site URL: `http://localhost:5173`
    - Redirect URLs: `http://localhost:5173/**`
-4. SQL Editor: plak en run, in deze volgorde
-   `supabase/migrations/20260907000000_phase1_foundation.sql`
-   `supabase/migrations/20260908000000_phase2_stake.sql`
+4. Migraties toepassen — twee routes:
+   - **CLI (aanbevolen, houdt bij welke migraties al gedraaid zijn):**
+     ```bash
+     npx supabase login
+     npx supabase link --project-ref <jouw-project-ref>
+     npx supabase db push
+     ```
+   - **Handmatig:** SQL Editor → plak en run, in deze volgorde
+     `supabase/migrations/20260907000000_phase1_foundation.sql`
+     `supabase/migrations/20260908000000_phase2_stake.sql`
+
+     Ben je later overgestapt naar de CLI nadat je hier handmatig migraties
+     draaide? Dan moet je die eerst als "al toegepast" markeren, anders
+     probeert `db push` ze opnieuw te draaien en knalt op bestaande
+     policies/functies:
+     ```bash
+     npx supabase migration repair --status applied <versie-timestamp>
+     ```
 5. Database → Extensions: zet `pg_cron` aan als je automatische expiry wilt
    (roept dan `expire_due_commitments()` als privileged role aan, buiten
    een user-sessie om, dus globaal in plaats van per gebruiker).
