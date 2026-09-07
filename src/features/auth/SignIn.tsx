@@ -1,24 +1,55 @@
 import { useState, type FormEvent } from "react";
 import { supabase } from "../../lib/supabaseClient";
 
+type Mode = "password" | "magic-link";
+type PasswordAction = "sign-in" | "sign-up";
+
 export function SignIn() {
+  const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState<PasswordAction | "magic-link" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [signedUp, setSignedUp] = useState(false);
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    setStatus("sending");
-    setErrorMessage("");
+  async function handlePassword(action: PasswordAction) {
+    setBusy(action);
+    setError(null);
 
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim() });
+    const call =
+      action === "sign-in"
+        ? supabase.auth.signInWithPassword({ email: email.trim(), password })
+        : supabase.auth.signUp({ email: email.trim(), password });
 
-    if (error) {
-      setStatus("error");
-      setErrorMessage(error.message);
+    const { data, error: authError } = await call;
+
+    if (authError) {
+      setError(authError.message);
+      setBusy(null);
       return;
     }
-    setStatus("sent");
+    if (action === "sign-up" && !data.session) {
+      // Email confirmation is still required for this project.
+      setSignedUp(true);
+    }
+    setBusy(null);
+  }
+
+  async function handleMagicLink(event: FormEvent) {
+    event.preventDefault();
+    setBusy("magic-link");
+    setError(null);
+
+    const { error: authError } = await supabase.auth.signInWithOtp({ email: email.trim() });
+
+    if (authError) {
+      setError(authError.message);
+      setBusy(null);
+      return;
+    }
+    setMagicLinkSent(true);
+    setBusy(null);
   }
 
   return (
@@ -28,17 +59,99 @@ export function SignIn() {
         Geen kansspel. Geen pot, geen odds, geen winst van anderen.
       </p>
 
-      {status === "sent" ? (
-        <p className="mt-8 rounded-md border border-ink-700 bg-ink-900 p-4 text-sm text-paper">
+      <div className="mt-8 flex gap-4 border-b border-ink-700 pb-2 font-mono text-xs uppercase tracking-wide">
+        <button
+          type="button"
+          onClick={() => {
+            setMode("password");
+            setError(null);
+          }}
+          className={mode === "password" ? "text-status-locked" : "text-ink-600"}
+        >
+          Wachtwoord
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setMode("magic-link");
+            setError(null);
+          }}
+          className={mode === "magic-link" ? "text-status-locked" : "text-ink-600"}
+        >
+          Magic link
+        </button>
+      </div>
+
+      {mode === "password" ? (
+        signedUp ? (
+          <p className="mt-6 rounded-md border border-ink-700 bg-ink-900 p-4 text-sm text-paper">
+            Account aangemaakt — check je mail om <strong>{email}</strong> te bevestigen voordat je
+            kunt inloggen.
+          </p>
+        ) : (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handlePassword("sign-in");
+            }}
+            className="mt-6 flex flex-col gap-3"
+          >
+            <label htmlFor="email" className="text-xs uppercase tracking-wide text-ink-600">
+              E-mailadres
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="jij@bedrijf.nl"
+              className="rounded-md border border-ink-700 bg-ink-900 px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
+            />
+            <label htmlFor="password" className="text-xs uppercase tracking-wide text-ink-600">
+              Wachtwoord
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Minimaal 6 tekens"
+              className="rounded-md border border-ink-700 bg-ink-900 px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
+            />
+            <div className="mt-2 flex gap-2">
+              <button
+                type="submit"
+                disabled={busy !== null}
+                className="flex-1 rounded-md bg-status-locked px-3 py-2 text-sm font-medium text-ink-950 disabled:opacity-60"
+              >
+                {busy === "sign-in" ? "Bezig…" : "Inloggen"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handlePassword("sign-up")}
+                disabled={busy !== null}
+                className="flex-1 rounded-md border border-ink-700 px-3 py-2 text-sm font-medium text-ink-600 disabled:opacity-60"
+              >
+                {busy === "sign-up" ? "Bezig…" : "Account aanmaken"}
+              </button>
+            </div>
+            {error && <p className="text-sm text-status-failed">{error}</p>}
+          </form>
+        )
+      ) : magicLinkSent ? (
+        <p className="mt-6 rounded-md border border-ink-700 bg-ink-900 p-4 text-sm text-paper">
           Check je mail — we hebben een inloglink gestuurd naar <strong>{email}</strong>.
         </p>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-3">
-          <label htmlFor="email" className="text-xs uppercase tracking-wide text-ink-600">
+        <form onSubmit={handleMagicLink} className="mt-6 flex flex-col gap-3">
+          <label htmlFor="magic-email" className="text-xs uppercase tracking-wide text-ink-600">
             E-mailadres
           </label>
           <input
-            id="email"
+            id="magic-email"
             type="email"
             required
             value={email}
@@ -48,14 +161,12 @@ export function SignIn() {
           />
           <button
             type="submit"
-            disabled={status === "sending"}
+            disabled={busy !== null}
             className="mt-2 rounded-md bg-status-locked px-3 py-2 text-sm font-medium text-ink-950 disabled:opacity-60"
           >
-            {status === "sending" ? "Bezig…" : "Stuur inloglink"}
+            {busy === "magic-link" ? "Bezig…" : "Stuur inloglink"}
           </button>
-          {status === "error" && (
-            <p className="text-sm text-status-failed">{errorMessage}</p>
-          )}
+          {error && <p className="text-sm text-status-failed">{error}</p>}
         </form>
       )}
     </div>
