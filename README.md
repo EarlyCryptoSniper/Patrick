@@ -97,12 +97,28 @@ Daarna foto-upload naar `{user_id}/{commitment_id}/{uuid}.jpg`, met
 
 ## Backlog
 
-- **Gebrande auth-mail.** De magic-link/confirm-mail komt nu van
-  `noreply@mail.app.supabase.io` ("Supabase Auth"), niet herkenbaar als
-  LockIn. Oplossing: custom SMTP instellen (Supabase → Project Settings →
-  Auth → SMTP Settings) plus een eigen "Confirm signup" / "Magic Link"
-  e-mailtemplate (Auth → Email Templates) met LockIn-afzender en -copy.
-  Geconstateerd tijdens eerste live test, bewust niet meteen opgelost.
+- **Custom SMTP (functioneel, niet alleen cosmetisch).** De ingebouwde
+  Supabase-mailer komt van `noreply@mail.app.supabase.io` ("Supabase
+  Auth") én heeft een zeer laag verzendlimiet (enkele mails per uur,
+  puur bedoeld om even te testen) — tijdens live testen al geraakt
+  ("email rate limit exceeded"). Oplossing: custom SMTP instellen
+  (Supabase → Project Settings → Auth → SMTP Settings) met een provider
+  als Resend, wat zowel het afzenderadres als het limiet oplost. Kan
+  volledig via de Supabase Management API (`PATCH
+  /v1/projects/{ref}/config/auth`, velden `smtp_host`/`smtp_port`/
+  `smtp_user`/`smtp_pass`/`smtp_sender_name`/`smtp_admin_email`) zodra er
+  een Resend API-key beschikbaar is — nog niet aangeleverd.
+- **Gebrande e-mailtemplates.** "Confirm signup" en "Magic Link" staan nog
+  op de Engelse Supabase-default-tekst. Supabase weigert
+  templatewijzigingen op de gratis tier zolang custom SMTP niet actief is
+  (geverifieerd: API gaf `400 Email template modification is not
+  available for free tier projects using the default email provider`) —
+  hangt dus vast aan bovenstaand punt. Kant-en-klare NL-teksten staan al
+  klaar (zie git-historie van dit bestand / eerdere sessie-aantekeningen).
+- **`site_url` / redirect allow-list** stond nog op de Supabase-default
+  (`http://localhost:3000`, lege allow-list) — dit is al gefixt naar
+  `http://localhost:5173` + `http://localhost:5173/**` via de Management
+  API, geen actie meer nodig.
 
 ## Ontwerpaantekeningen
 
