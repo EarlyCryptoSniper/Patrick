@@ -95,6 +95,15 @@ Wizard: €5/€10 → taak → deadline → samenvatting → tekenen → Vastge
 Daarna foto-upload naar `{user_id}/{commitment_id}/{uuid}.jpg`, met
 `finalize_proof` als afsluitende RPC.
 
+## Backlog
+
+- **Gebrande auth-mail.** De magic-link/confirm-mail komt nu van
+  `noreply@mail.app.supabase.io` ("Supabase Auth"), niet herkenbaar als
+  LockIn. Oplossing: custom SMTP instellen (Supabase → Project Settings →
+  Auth → SMTP Settings) plus een eigen "Confirm signup" / "Magic Link"
+  e-mailtemplate (Auth → Email Templates) met LockIn-afzender en -copy.
+  Geconstateerd tijdens eerste live test, bewust niet meteen opgelost.
+
 ## Ontwerpaantekeningen
 
 Gerouteerd als **ADAPTIVE** (meerdere skills, geen volledige requirements-
