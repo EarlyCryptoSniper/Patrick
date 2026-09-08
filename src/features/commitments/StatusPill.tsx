@@ -16,7 +16,7 @@ const DOT_CLASS: Record<CommitmentStatus, string> = {
 
 export function StatusPill({ status }: { status: CommitmentStatus }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-ink-700 px-2.5 py-1 font-mono text-xs uppercase tracking-wide text-ink-600">
+    <span className="glass inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-xs uppercase tracking-wide text-ink-600">
       <span className={`h-1.5 w-1.5 rounded-full ${DOT_CLASS[status]}`} aria-hidden="true" />
       {LABEL[status]}
     </span>

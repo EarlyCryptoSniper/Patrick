@@ -23,7 +23,7 @@ export function ProofUpload({ commitmentId, onFinalized }: { commitmentId: strin
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-md border border-ink-700 px-3 py-1.5 text-xs font-medium text-ink-600 hover:border-status-completed hover:text-paper">
+      <label className="glass-btn glass-btn-completed inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-paper">
         {busy ? "Bezig…" : "Foto-bewijs uploaden"}
         <input
           ref={inputRef}

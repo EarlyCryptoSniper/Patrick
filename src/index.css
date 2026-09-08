@@ -8,4 +8,103 @@
 
 body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #0b0f14;
+  min-height: 100vh;
+}
+
+/* Ambient backdrop — colored light the glass panels can refract. Fixed so
+   it never scrolls away and stays behind everything (z-index: -1). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 18% 15%, rgba(217, 164, 65, 0.22), transparent 42%),
+    radial-gradient(circle at 82% 10%, rgba(46, 92, 138, 0.28), transparent 48%),
+    radial-gradient(circle at 50% 95%, rgba(63, 174, 122, 0.16), transparent 45%),
+    #0b0f14;
+}
+
+/* Frosted-glass surface — cards, panels, the sign-in window. */
+.glass {
+  position: relative;
+  background: rgba(233, 236, 239, 0.06);
+  border: 1px solid rgba(233, 236, 239, 0.14);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* A "door": arched top, a faint vertical seam splitting it into two
+   leaves — the sign-in window and the wizard both use this. */
+.glass-door {
+  border-radius: 28px 28px 14px 14px;
+}
+.glass-door::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 14%;
+  bottom: 14%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  pointer-events: none;
+}
+
+/* Glass button — translucent, brightens on hover, presses on click. */
+.glass-btn {
+  position: relative;
+  background: rgba(233, 236, 239, 0.1);
+  border: 1px solid rgba(233, 236, 239, 0.18);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 2px 10px rgba(0, 0, 0, 0.3);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+.glass-btn:hover:not(:disabled) {
+  background: rgba(233, 236, 239, 0.18);
+  border-color: rgba(233, 236, 239, 0.3);
+}
+.glass-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.glass-btn:disabled {
+  opacity: 0.5;
+}
+
+/* Accent variants — same glass treatment, tinted with the status color
+   instead of neutral, so semantics survive the material change. */
+.glass-btn-locked {
+  background: rgba(217, 164, 65, 0.28);
+  border-color: rgba(217, 164, 65, 0.45);
+}
+.glass-btn-locked:hover:not(:disabled) {
+  background: rgba(217, 164, 65, 0.42);
+}
+.glass-btn-completed {
+  background: rgba(63, 174, 122, 0.26);
+  border-color: rgba(63, 174, 122, 0.42);
+}
+.glass-btn-completed:hover:not(:disabled) {
+  background: rgba(63, 174, 122, 0.4);
+}
+.glass-btn-failed {
+  background: rgba(217, 83, 79, 0.22);
+  border-color: rgba(217, 83, 79, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
 }

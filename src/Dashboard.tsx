@@ -8,7 +8,7 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <header className="mb-8 flex items-start justify-between gap-4">
+      <header className="glass mb-8 flex items-center justify-between gap-4 rounded-2xl px-5 py-4">
         <div>
           <h1 className="text-xl font-semibold text-paper">LockIn</h1>
           <p className="text-sm text-ink-600">Zet het vast. Geen weg terug.</p>
@@ -16,7 +16,7 @@ export function Dashboard() {
         <button
           type="button"
           onClick={() => void supabase.auth.signOut()}
-          className="text-xs text-ink-600 underline decoration-ink-700 underline-offset-4 hover:text-paper"
+          className="glass-btn rounded-lg px-3 py-1.5 text-xs text-ink-600 hover:text-paper"
         >
           Uitloggen
         </button>
@@ -27,7 +27,7 @@ export function Dashboard() {
       </div>
 
       {error && (
-        <p className="mb-4 rounded-md border border-status-failed/40 bg-status-failed/10 p-3 text-sm text-status-failed">
+        <p className="glass-btn glass-btn-failed mb-4 rounded-xl p-3 text-sm text-paper">
           {error}
         </p>
       )}

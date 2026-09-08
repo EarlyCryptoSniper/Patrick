@@ -49,7 +49,7 @@ export function CommitmentCard({
   }
 
   return (
-    <li className="flex flex-col gap-3 rounded-lg border border-ink-700 bg-ink-900 p-4">
+    <li className="glass flex flex-col gap-3 rounded-2xl p-4">
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-base font-medium text-paper">{commitment.title}</h3>
         <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export function CommitmentCard({
               type="button"
               onClick={handleLock}
               disabled={busy}
-              className="rounded-md bg-status-locked px-3 py-1.5 text-xs font-medium text-ink-950 disabled:opacity-60"
+              className="glass-btn glass-btn-locked rounded-lg px-3 py-1.5 text-xs font-medium text-paper"
             >
               Vastzetten
             </button>
@@ -89,7 +89,7 @@ export function CommitmentCard({
               type="button"
               onClick={handleDelete}
               disabled={busy}
-              className="rounded-md border border-ink-700 px-3 py-1.5 text-xs font-medium text-ink-600 disabled:opacity-60"
+              className="glass-btn rounded-lg px-3 py-1.5 text-xs font-medium text-ink-600"
             >
               Verwijderen
             </button>

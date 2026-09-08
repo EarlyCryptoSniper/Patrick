@@ -53,122 +53,124 @@ export function SignIn() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <h1 className="text-2xl font-semibold text-paper">LockIn</h1>
-      <p className="mt-2 text-sm text-ink-600">
-        Geen kansspel. Geen pot, geen odds, geen winst van anderen.
-      </p>
+    <div className="flex min-h-screen items-center justify-center px-6 py-12">
+      <div className="glass glass-door w-full max-w-sm p-8">
+        <h1 className="text-2xl font-semibold text-paper">LockIn</h1>
+        <p className="mt-2 text-sm text-ink-600">
+          Geen kansspel. Geen pot, geen odds, geen winst van anderen.
+        </p>
 
-      <div className="mt-8 flex gap-4 border-b border-ink-700 pb-2 font-mono text-xs uppercase tracking-wide">
-        <button
-          type="button"
-          onClick={() => {
-            setMode("password");
-            setError(null);
-          }}
-          className={mode === "password" ? "text-status-locked" : "text-ink-600"}
-        >
-          Wachtwoord
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setMode("magic-link");
-            setError(null);
-          }}
-          className={mode === "magic-link" ? "text-status-locked" : "text-ink-600"}
-        >
-          Magic link
-        </button>
-      </div>
+        <div className="mt-8 flex gap-4 border-b border-white/10 pb-2 font-mono text-xs uppercase tracking-wide">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("password");
+              setError(null);
+            }}
+            className={mode === "password" ? "text-status-locked" : "text-ink-600"}
+          >
+            Wachtwoord
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("magic-link");
+              setError(null);
+            }}
+            className={mode === "magic-link" ? "text-status-locked" : "text-ink-600"}
+          >
+            Magic link
+          </button>
+        </div>
 
-      {mode === "password" ? (
-        signedUp ? (
-          <p className="mt-6 rounded-md border border-ink-700 bg-ink-900 p-4 text-sm text-paper">
-            Account aangemaakt — check je mail om <strong>{email}</strong> te bevestigen voordat je
-            kunt inloggen.
+        {mode === "password" ? (
+          signedUp ? (
+            <p className="glass mt-6 rounded-xl p-4 text-sm text-paper">
+              Account aangemaakt — check je mail om <strong>{email}</strong> te bevestigen voordat je
+              kunt inloggen.
+            </p>
+          ) : (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void handlePassword("sign-in");
+              }}
+              className="mt-6 flex flex-col gap-3"
+            >
+              <label htmlFor="email" className="text-xs uppercase tracking-wide text-ink-600">
+                E-mailadres
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="jij@bedrijf.nl"
+                className="glass rounded-xl px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
+              />
+              <label htmlFor="password" className="text-xs uppercase tracking-wide text-ink-600">
+                Wachtwoord
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Minimaal 6 tekens"
+                className="glass rounded-xl px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="submit"
+                  disabled={busy !== null}
+                  className="glass-btn glass-btn-locked flex-1 rounded-xl px-3 py-2 text-sm font-medium text-paper"
+                >
+                  {busy === "sign-in" ? "Bezig…" : "Inloggen"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handlePassword("sign-up")}
+                  disabled={busy !== null}
+                  className="glass-btn flex-1 rounded-xl px-3 py-2 text-sm font-medium text-ink-600"
+                >
+                  {busy === "sign-up" ? "Bezig…" : "Account aanmaken"}
+                </button>
+              </div>
+              {error && <p className="text-sm text-status-failed">{error}</p>}
+            </form>
+          )
+        ) : magicLinkSent ? (
+          <p className="glass mt-6 rounded-xl p-4 text-sm text-paper">
+            Check je mail — we hebben een inloglink gestuurd naar <strong>{email}</strong>.
           </p>
         ) : (
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              void handlePassword("sign-in");
-            }}
-            className="mt-6 flex flex-col gap-3"
-          >
-            <label htmlFor="email" className="text-xs uppercase tracking-wide text-ink-600">
+          <form onSubmit={handleMagicLink} className="mt-6 flex flex-col gap-3">
+            <label htmlFor="magic-email" className="text-xs uppercase tracking-wide text-ink-600">
               E-mailadres
             </label>
             <input
-              id="email"
+              id="magic-email"
               type="email"
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="jij@bedrijf.nl"
-              className="rounded-md border border-ink-700 bg-ink-900 px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
+              className="glass rounded-xl px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
             />
-            <label htmlFor="password" className="text-xs uppercase tracking-wide text-ink-600">
-              Wachtwoord
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Minimaal 6 tekens"
-              className="rounded-md border border-ink-700 bg-ink-900 px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
-            />
-            <div className="mt-2 flex gap-2">
-              <button
-                type="submit"
-                disabled={busy !== null}
-                className="flex-1 rounded-md bg-status-locked px-3 py-2 text-sm font-medium text-ink-950 disabled:opacity-60"
-              >
-                {busy === "sign-in" ? "Bezig…" : "Inloggen"}
-              </button>
-              <button
-                type="button"
-                onClick={() => void handlePassword("sign-up")}
-                disabled={busy !== null}
-                className="flex-1 rounded-md border border-ink-700 px-3 py-2 text-sm font-medium text-ink-600 disabled:opacity-60"
-              >
-                {busy === "sign-up" ? "Bezig…" : "Account aanmaken"}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={busy !== null}
+              className="glass-btn glass-btn-locked mt-2 rounded-xl px-3 py-2 text-sm font-medium text-paper"
+            >
+              {busy === "magic-link" ? "Bezig…" : "Stuur inloglink"}
+            </button>
             {error && <p className="text-sm text-status-failed">{error}</p>}
           </form>
-        )
-      ) : magicLinkSent ? (
-        <p className="mt-6 rounded-md border border-ink-700 bg-ink-900 p-4 text-sm text-paper">
-          Check je mail — we hebben een inloglink gestuurd naar <strong>{email}</strong>.
-        </p>
-      ) : (
-        <form onSubmit={handleMagicLink} className="mt-6 flex flex-col gap-3">
-          <label htmlFor="magic-email" className="text-xs uppercase tracking-wide text-ink-600">
-            E-mailadres
-          </label>
-          <input
-            id="magic-email"
-            type="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="jij@bedrijf.nl"
-            className="rounded-md border border-ink-700 bg-ink-900 px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
-          />
-          <button
-            type="submit"
-            disabled={busy !== null}
-            className="mt-2 rounded-md bg-status-locked px-3 py-2 text-sm font-medium text-ink-950 disabled:opacity-60"
-          >
-            {busy === "magic-link" ? "Bezig…" : "Stuur inloglink"}
-          </button>
-          {error && <p className="text-sm text-status-failed">{error}</p>}
-        </form>
-      )}
+        )}
+      </div>
     </div>
   );
 }

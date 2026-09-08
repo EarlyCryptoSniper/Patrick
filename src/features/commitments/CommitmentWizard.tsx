@@ -81,7 +81,7 @@ export function CommitmentWizard({ onCreated }: { onCreated: () => void }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full rounded-lg border border-dashed border-ink-700 py-3 text-sm text-ink-600 hover:border-status-locked hover:text-paper"
+        className="glass-btn w-full rounded-2xl py-3 text-sm text-ink-600 hover:text-paper"
       >
         + Nieuw commitment
       </button>
@@ -89,7 +89,7 @@ export function CommitmentWizard({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <div className="rounded-lg border border-ink-700 bg-ink-900 p-4">
+    <div className="glass glass-door p-4">
       <div className="mb-4 flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-ink-600">
         {STEPS.map((s, i) => (
           <span key={s} className={i === stepIndex ? "text-status-locked" : i < stepIndex ? "text-ink-600" : "text-ink-700"}>
@@ -112,7 +112,7 @@ export function CommitmentWizard({ onCreated }: { onCreated: () => void }) {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Bijv. Voorstel af vóór vrijdag"
-            className="w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
+            className="glass w-full rounded-xl px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
           />
         </div>
       )}
@@ -127,7 +127,7 @@ export function CommitmentWizard({ onCreated }: { onCreated: () => void }) {
             type="datetime-local"
             value={deadline}
             onChange={(event) => setDeadline(event.target.value)}
-            className="rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
+            className="glass rounded-xl px-3 py-2 text-sm text-paper outline-none focus:border-status-locked"
           />
           {!canAdvance() && <p className="mt-2 text-xs text-status-failed">Kies een moment in de toekomst.</p>}
         </div>
@@ -142,10 +142,8 @@ export function CommitmentWizard({ onCreated }: { onCreated: () => void }) {
                 key={option.cents}
                 type="button"
                 onClick={() => setStakeCents(option.cents)}
-                className={`rounded-md border px-3 py-2 text-sm ${
-                  stakeCents === option.cents
-                    ? "border-status-locked bg-status-locked text-ink-950"
-                    : "border-ink-700 text-ink-600"
+                className={`glass-btn rounded-xl px-3 py-2 text-sm ${
+                  stakeCents === option.cents ? "glass-btn-locked text-paper" : "text-ink-600"
                 }`}
               >
                 {option.label}
@@ -190,7 +188,7 @@ export function CommitmentWizard({ onCreated }: { onCreated: () => void }) {
             type="button"
             onClick={handleSign}
             disabled={busy}
-            className="rounded-md bg-status-locked px-4 py-2 text-xs font-medium text-ink-950 disabled:opacity-60"
+            className="glass-btn glass-btn-locked rounded-xl px-4 py-2 text-xs font-medium text-paper"
           >
             {busy ? "Bezig…" : "Tekenen en vastzetten"}
           </button>
@@ -199,7 +197,7 @@ export function CommitmentWizard({ onCreated }: { onCreated: () => void }) {
             type="button"
             onClick={goNext}
             disabled={!canAdvance()}
-            className="rounded-md bg-paper px-4 py-2 text-xs font-medium text-ink-950 disabled:opacity-60"
+            className="glass-btn rounded-xl px-4 py-2 text-xs font-medium text-paper"
           >
             Volgende →
           </button>
