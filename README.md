@@ -61,6 +61,15 @@ Gebruik **alleen** de anon/publishable key. Nooit de service-role key in deze ap
    `useCommitments` roept de RPC self-heal aan op elke load.
 6. Storage: bucket `commitment-proofs` wordt door de migratie aangemaakt
    (privé). Upload-UI staat er nu (Phase 2).
+7. AI-scheidsrechter: zet je OpenAI API-key als Edge Function-secret en
+   deploy de functie:
+   ```bash
+   npx supabase secrets set OPENAI_API_KEY=sk-...
+   npx supabase functions deploy verify-proof
+   ```
+   Zonder deze stap faalt elke foto-upload met `referee_unavailable` — de
+   functie is de enige weg naar `completed` sinds migratie 3 het directe
+   `finalize_proof`-pad afsloot.
 
 ## Statusmachine
 
@@ -132,7 +141,19 @@ Gebouwd (niet-financieel deel):
   commitment zolang de deadline niet voorbij is (`canFinalizeProof`).
   Upload gaat naar `commitment-proofs/{user_id}/{commitment_id}/{uuid}.ext`
   (bestandsextensie uit de meegegeven file, `proofPath.ts`, puur
-  functie/los getest), gevolgd door `finalize_proof`.
+  functie/los getest), gevolgd door AI-verificatie (zie hieronder).
+- **AI-scheidsrechter** (`supabase/functions/verify-proof`): tot dit punt
+  accepteerde `finalize_proof` elk bestand zonder controle — gevonden
+  tijdens live testen ("er is nog geen scheidsrechter"). Nu belt de
+  client na de upload een Edge Function, die de foto tegen de
+  taakomschrijving laat beoordelen door OpenAI (`gpt-4o-mini`, vision) en
+  alleen bij een `pass`-verdict zelf `finalize_proof` aanroept — met de
+  service-role key, want `finalize_proof`'s `authenticated`-grant is
+  ingetrokken (migratie `20260908010000_phase2_ai_referee.sql`). Bij een
+  `fail` blijft de commitment gewoon `locked` (geen nieuwe status, geen
+  terug-transitie) en wordt de afgekeurde upload verwijderd; de gebruiker
+  kan een andere foto proberen zolang de deadline niet voorbij is.
+  Vereist een OpenAI API-key als Edge Function-secret (`OPENAI_API_KEY`).
 
 Nog niet gebouwd (bewust, wacht op een providerkeuze mét de gebruiker
 erbij): echte betaling via Stripe of Mollie — dat vraagt een account en

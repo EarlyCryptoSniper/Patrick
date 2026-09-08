@@ -45,13 +45,33 @@ export async function deleteDraft(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function finalizeProof(id: string, proofPath: string): Promise<Commitment> {
-  const { data, error } = await supabase.rpc("finalize_proof", {
-    p_id: id,
-    p_proof_path: proofPath,
+export interface ProofVerdict {
+  verdict: "pass" | "fail";
+  reason: string;
+  commitment?: Commitment;
+}
+
+// The AI referee — the only path left that can move a commitment from
+// locked to completed. finalize_proof's authenticated grant was revoked
+// (20260908010000_phase2_ai_referee.sql); only the verify-proof Edge
+// Function, using the service-role key, can still call it, and only
+// after an OpenAI vision model judges the photo plausible for the task.
+export async function verifyProof(commitmentId: string, proofPath: string): Promise<ProofVerdict> {
+  const { data, error } = await supabase.functions.invoke("verify-proof", {
+    body: { commitment_id: commitmentId, path: proofPath },
   });
-  if (error) throw error;
-  return data as Commitment;
+  if (error) {
+    let reason = error.message;
+    try {
+      const body = await (error as { context: Response }).context.json();
+      if (body?.reason) reason = body.reason;
+      else if (body?.error) reason = body.error;
+    } catch {
+      // context wasn't readable JSON — fall back to error.message above
+    }
+    throw new Error(reason);
+  }
+  return data as ProofVerdict;
 }
 
 // Uploads to the private `commitment-proofs` bucket under the caller's own
