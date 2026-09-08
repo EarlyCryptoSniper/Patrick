@@ -4,19 +4,21 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Twitter/X "Dim" dark-mode palette, plus the classic Twitter
+        // accent trio (blue/green/red) for status semantics.
         ink: {
-          950: "#0B0F14",
-          900: "#11161D",
-          800: "#1A212B",
-          700: "#293240",
-          600: "#3C4859",
+          950: "#15202B", // Dim achtergrond
+          900: "#192734", // Dim kaart
+          800: "#22303C",
+          700: "#38444D", // Twitter's documented dim-mode divider color
+          600: "#8899A6", // Dim tekst
         },
-        paper: "#E9ECEF",
+        paper: "#F5F8FA",
         status: {
-          draft: "#8B96A5",
-          locked: "#D9A441",
-          completed: "#3FAE7A",
-          failed: "#D9534F",
+          draft: "#8899A6",
+          locked: "#1D9BF0", // X accentblauw
+          completed: "#17BF63", // klassiek Twitter-groen
+          failed: "#E0245E", // klassiek Twitter-rood/roze
         },
       },
       fontFamily: {

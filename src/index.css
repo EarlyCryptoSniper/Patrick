@@ -8,29 +8,30 @@
 
 body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  background: #0b0f14;
+  background: #15202b;
   min-height: 100vh;
 }
 
 /* Ambient backdrop — colored light the glass panels can refract. Fixed so
-   it never scrolls away and stays behind everything (z-index: -1). */
+   it never scrolls away and stays behind everything (z-index: -1).
+   Twitter/X accent trio: accent blue, classic green, classic red/pink. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at 18% 15%, rgba(217, 164, 65, 0.22), transparent 42%),
-    radial-gradient(circle at 82% 10%, rgba(46, 92, 138, 0.28), transparent 48%),
-    radial-gradient(circle at 50% 95%, rgba(63, 174, 122, 0.16), transparent 45%),
-    #0b0f14;
+    radial-gradient(circle at 18% 15%, rgba(29, 155, 240, 0.22), transparent 42%),
+    radial-gradient(circle at 82% 10%, rgba(23, 191, 99, 0.16), transparent 48%),
+    radial-gradient(circle at 50% 95%, rgba(224, 36, 94, 0.14), transparent 45%),
+    #15202b;
 }
 
 /* Frosted-glass surface — cards, panels, the sign-in window. */
 .glass {
   position: relative;
-  background: rgba(233, 236, 239, 0.06);
-  border: 1px solid rgba(233, 236, 239, 0.14);
+  background: rgba(245, 248, 250, 0.06);
+  border: 1px solid rgba(245, 248, 250, 0.14);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   box-shadow:
@@ -58,8 +59,8 @@ body::before {
 /* Glass button — translucent, brightens on hover, presses on click. */
 .glass-btn {
   position: relative;
-  background: rgba(233, 236, 239, 0.1);
-  border: 1px solid rgba(233, 236, 239, 0.18);
+  background: rgba(245, 248, 250, 0.1);
+  border: 1px solid rgba(245, 248, 250, 0.18);
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   box-shadow:
@@ -71,8 +72,8 @@ body::before {
     transform 0.1s ease;
 }
 .glass-btn:hover:not(:disabled) {
-  background: rgba(233, 236, 239, 0.18);
-  border-color: rgba(233, 236, 239, 0.3);
+  background: rgba(245, 248, 250, 0.18);
+  border-color: rgba(245, 248, 250, 0.3);
 }
 .glass-btn:active:not(:disabled) {
   transform: translateY(1px);
@@ -84,22 +85,22 @@ body::before {
 /* Accent variants — same glass treatment, tinted with the status color
    instead of neutral, so semantics survive the material change. */
 .glass-btn-locked {
-  background: rgba(217, 164, 65, 0.28);
-  border-color: rgba(217, 164, 65, 0.45);
+  background: rgba(29, 155, 240, 0.28);
+  border-color: rgba(29, 155, 240, 0.45);
 }
 .glass-btn-locked:hover:not(:disabled) {
-  background: rgba(217, 164, 65, 0.42);
+  background: rgba(29, 155, 240, 0.42);
 }
 .glass-btn-completed {
-  background: rgba(63, 174, 122, 0.26);
-  border-color: rgba(63, 174, 122, 0.42);
+  background: rgba(23, 191, 99, 0.26);
+  border-color: rgba(23, 191, 99, 0.42);
 }
 .glass-btn-completed:hover:not(:disabled) {
-  background: rgba(63, 174, 122, 0.4);
+  background: rgba(23, 191, 99, 0.4);
 }
 .glass-btn-failed {
-  background: rgba(217, 83, 79, 0.22);
-  border-color: rgba(217, 83, 79, 0.4);
+  background: rgba(224, 36, 94, 0.22);
+  border-color: rgba(224, 36, 94, 0.4);
 }
 
 @media (prefers-reduced-motion: reduce) {
