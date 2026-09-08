@@ -154,6 +154,14 @@ Gebouwd (niet-financieel deel):
   terug-transitie) en wordt de afgekeurde upload verwijderd; de gebruiker
   kan een andere foto proberen zolang de deadline niet voorbij is.
   Vereist een OpenAI API-key als Edge Function-secret (`OPENAI_API_KEY`).
+  Live: OpenAI-key gezet, functie gedeployed, geverifieerd tegen de echte
+  database (zowel een `fail`- als een geslaagde upload getest).
+- **Geen oude foto's.** `ProofUpload.tsx` heeft geen `<input type="file">`
+  meer — dat liet iedereen gewoon een bestaande foto uit de galerij kiezen
+  (`capture="environment"` is slechts een browser-hint, geen afdwinging).
+  In plaats daarvan opent de knop een live camera (`getUserMedia`) en gaat
+  alleen een net-getrokken frame (canvas → blob) naar de upload. Geen
+  bestandskeuze in de UI, dus geen weg om een oud bestand te uploaden.
 
 Nog niet gebouwd (bewust, wacht op een providerkeuze mét de gebruiker
 erbij): echte betaling via Stripe of Mollie — dat vraagt een account en
